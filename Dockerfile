@@ -10,4 +10,4 @@ copy package.json .
 
 RUN npm i
 
-CMD ['node', 'server.js']
+CMD ['npm', 'start']
