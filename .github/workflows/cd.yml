@@ -6,7 +6,7 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latests
+    runs-on: ubuntu-latest
     steps:
         - name: executing ssh commands to remote server
           uses: appleboy/ssh-action@v1.0.0

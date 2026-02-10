@@ -8,7 +8,7 @@ COPY public ./public
 COPY .env .
 copy package.json .
 
-RUN npm i
+RUN npm install
 EXPOSE 3000
 
-CMD ['npm', 'start']
+CMD ["node", "server.js"]
