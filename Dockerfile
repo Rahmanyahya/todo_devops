@@ -6,7 +6,7 @@ COPY server.js .
 COPY views ./views
 COPY public ./public
 COPY .env .
-copy package.json .
+COPY package.json .
 
 RUN npm install
 EXPOSE 3000
