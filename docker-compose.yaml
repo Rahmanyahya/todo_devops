@@ -1,49 +1,63 @@
-version: "1"
 services: 
   postgres:
     image: postgres:latest
     container_name: postgres-db
+    restart: unless-stopped
     ports:
       - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - todo_network
-    volumes:
-      - "potgres-data:/data"
-    environtment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin123
-      POSTGRES_DB: ${}
     
   todo_list_1:
     build: .
-    conatiner_name: todo_1
-    restart: unless-stoped
+    container_name: todo_1
+    restart: unless-stopped
+    depends_on:
+      postgres: 
+        condition: service_healthy
     env_file:
       - .env
     ports:
-      - "127.0.0.1:${PORT1}:${PORT1}"
+      - "127.0.0.1:3001:3000"
     networks:
       - todo_network    
 
   todo_list_2:
     build: .
     container_name: todo_2
-    restart: unless-stoped
+    restart: unless-stopped
+    depends_on:
+      postgres: 
+        condition: service_healthy
     env_file:
       - .env
     ports:
-      - "127.0.0.1:${PORT2}:${PORT2}"
+      - "127.0.0.1:3002:3000"
     networks:
       - todo_network
   
   todo_list_3:
     build: .
     container_name: todo_3
-    restart: unless-stoped
+    restart: unless-stopped
+    depends_on:
+      postgres: 
+        condition: service_healthy
     env_file:
       - .env
     ports:
-      - "127.0.0.1:${PORT3}:${PORT3}"
+      - "127.0.0.1:3003:3000"
     networks:
       - todo_network
   
@@ -51,3 +65,5 @@ networks:
   todo_network:
     driver: bridge
   
+volumes:
+  postgres-data:

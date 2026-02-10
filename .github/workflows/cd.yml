@@ -1,0 +1,22 @@
+name: Deploy to server
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latests
+    steps:
+        - name: executing ssh commands to remote server
+          uses: appleboy/ssh-action@v1.0.0
+          with:
+            host: ${{ secrets.HOST }}
+            username: ${{ secrets.USERNAME }}
+            password: ${{ secrets.PASSWORD }}
+            port: 22
+            script: |
+              cd /home/todo_devops
+              git pull origin main
+              docker compose down
+              docker compose up -d --build
