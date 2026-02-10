@@ -1,0 +1,53 @@
+version: "1"
+services: 
+  postgres:
+    image: postgres:latest
+    container_name: postgres-db
+    ports:
+      - "5432:5432"
+    networks:
+      - todo_network
+    volumes:
+      - "potgres-data:/data"
+    environtment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: ${}
+    
+  todo_list_1:
+    build: .
+    conatiner_name: todo_1
+    restart: unless-stoped
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:${PORT1}:${PORT1}"
+    networks:
+      - todo_network    
+
+  todo_list_2:
+    build: .
+    container_name: todo_2
+    restart: unless-stoped
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:${PORT2}:${PORT2}"
+    networks:
+      - todo_network
+  
+  todo_list_3:
+    build: .
+    container_name: todo_3
+    restart: unless-stoped
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:${PORT3}:${PORT3}"
+    networks:
+      - todo_network
+  
+networks:
+  todo_network:
+    driver: bridge
+  

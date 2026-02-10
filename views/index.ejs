@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo App</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>My Todo List</h1>
+
+    <form action="/add" method="POST" class="add-form">
+      <input type="text" name="task" placeholder="Add a new task..." required>
+      <button type="submit">Add</button>
+    </form>
+
+    <ul class="todo-list">
+      <% todos.forEach(todo => { %>
+        <li class="<%= todo.completed ? 'completed' : '' %>">
+          <div class="todo-content">
+            <span class="task-text"><%= todo.task %></span>
+            <div class="actions">
+              <form action="/complete/<%= todo.id %>" method="POST" class="inline-form">
+                <button type="submit" class="btn-complete">
+                  <%= todo.completed ? 'Undo' : 'Complete' %>
+                </button>
+              </form>
+              <form action="/delete/<%= todo.id %>" method="POST" class="inline-form">
+                <button type="submit" class="btn-delete">Delete</button>
+              </form>
+            </div>
+          </div>
+        </li>
+      <% }); %>
+    </ul>
+
+    <% if (todos.length === 0) { %>
+      <p class="empty-state">No todos yet. Add one above!</p>
+    <% } %>
+  </div>
+</body>
+</html>
