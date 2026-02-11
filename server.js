@@ -98,7 +98,7 @@ app.get('/api/todos', async (req, res) => {
 
 app.get('/health', async (req, res) => {
     return res.status(200).json({
-        "helath": "ok"
+        "health": "ok"
     })
 })
 
