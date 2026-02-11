@@ -1,14 +1,14 @@
-FROM node:20
+FROM  node:20-alpine
 
 WORKDIR /app
 
-COPY server.js .
-COPY views ./views
-COPY public ./public
-COPY .env .
 COPY package.json .
+COPY server.js .
+COPY prisma ./prisma
+COPY public ./public
+COPY views ./views
 
 RUN npm install
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["run.sh"]

@@ -1,69 +1,48 @@
-services: 
+services:
   postgres:
     image: postgres:latest
     container_name: postgres-db
+    networks:
+      - todo_network
     restart: unless-stopped
+    environment:
+      POSTGRES_USERNAME: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DATABASE: ${DATABASE_NAME}
     ports:
       - "5432:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
       timeout: 5s
-      retries: 5
-    networks:
-      - todo_network
-    
-  todo_list_1:
-    build: .
-    container_name: todo_1
-    restart: unless-stopped
-    depends_on:
-      postgres: 
-        condition: service_healthy
-    env_file:
-      - .env
-    ports:
-      - "127.0.0.1:3001:${PORT}"
-    networks:
-      - todo_network    
+      retries: 5  
 
-  todo_list_2:
-    build: .
-    container_name: todo_2
-    restart: unless-stopped
-    depends_on:
-      postgres: 
+  todo_app:
+    depends_on: 
+      postgres:
         condition: service_healthy
+        restart: true
+    build: ghcr.io/Rahmanyahya/todo_app:latest
+    container_name: todo_app
+    restart: unless-stopped
+    networks:
+      - todo_network
     env_file:
       - .env
     ports:
-      - "127.0.0.1:3002:${PORT}"
-    networks:
-      - todo_network
-  
-  todo_list_3:
-    build: .
-    container_name: todo_3
-    restart: unless-stopped
-    depends_on:
-      postgres: 
-        condition: service_healthy
-    env_file:
-      - .env
-    ports:
-      - "127.0.0.1:3003:${PORT}"
-    networks:
-      - todo_network
-  
+      - "127.0.0.1:${PORT}:${PORT}"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${PORT}/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
 networks:
   todo_network:
     driver: bridge
-  
+
 volumes:
-  postgres-data:
+  db_data:

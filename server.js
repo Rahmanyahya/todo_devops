@@ -1,88 +1,113 @@
 require('dotenv').config();
 const express = require('express');
-const { Pool } = require('pg');
+const path = require('path');
+const { PrismaClient } = require('@prisma/client');
 
 const app = express();
-const port = process.env.PORT || 3000;
-
-// PostgreSQL connection pool
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-});
+const prisma = new PrismaClient();
+const PORT = process.env.PORT || 3000;
 
 // Middleware
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(express.json());
 
-// Set EJS as templating engine
+// Set view engine
 app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 // Routes
+
+// GET / - Render todo list
 app.get('/', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM todos ORDER BY created_at DESC');
-    res.render('index', { todos: result.rows });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Database error');
+    const todos = await prisma.todo.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    res.render('index', { todos });
+  } catch (error) {
+    console.error('Error fetching todos:', error);
+    res.render('index', { todos: [], error: 'Failed to load todos' });
   }
 });
 
-app.post('/add', async (req, res) => {
-  const { task } = req.body;
+// POST /todos - Create todo
+app.post('/todos', async (req, res) => {
   try {
-    await pool.query('INSERT INTO todos (task, completed) VALUES ($1, $2)', [task, false]);
+    const { task } = req.body;
+    if (!task || task.trim() === '') {
+      return res.redirect('/');
+    }
+    await prisma.todo.create({
+      data: { task: task.trim() }
+    });
     res.redirect('/');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Error adding todo');
+  } catch (error) {
+    console.error('Error creating todo:', error);
+    res.redirect('/');
   }
 });
 
-app.post('/complete/:id', async (req, res) => {
-  const { id } = req.params;
+// POST /todos/:id/complete - Toggle completed status
+app.post('/todos/:id/complete', async (req, res) => {
   try {
-    await pool.query('UPDATE todos SET completed = NOT completed WHERE id = $1', [id]);
+    const { id } = req.params;
+    const todo = await prisma.todo.findUnique({
+      where: { id: parseInt(id) }
+    });
+
+    if (todo) {
+      await prisma.todo.update({
+        where: { id: parseInt(id) },
+        data: { completed: !todo.completed }
+      });
+    }
     res.redirect('/');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Error updating todo');
+  } catch (error) {
+    console.error('Error updating todo:', error);
+    res.redirect('/');
   }
 });
 
-app.post('/delete/:id', async (req, res) => {
-  const { id } = req.params;
+// POST /todos/:id/delete - Delete todo
+app.post('/todos/:id/delete', async (req, res) => {
   try {
-    await pool.query('DELETE FROM todos WHERE id = $1', [id]);
+    const { id } = req.params;
+    await prisma.todo.delete({
+      where: { id: parseInt(id) }
+    });
     res.redirect('/');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Error deleting todo');
+  } catch (error) {
+    console.error('Error deleting todo:', error);
+    res.redirect('/');
   }
 });
 
-app.post('/update/:id', async (req, res) => {
-  const { id } = req.params;
-  const { task } = req.body;
+// GET /api/todos - JSON API endpoint
+app.get('/api/todos', async (req, res) => {
   try {
-    await pool.query('UPDATE todos SET task = $1 WHERE id = $2', [task, id]);
-    res.redirect('/');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Error updating todo');
+    const todos = await prisma.todo.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(todos);
+  } catch (error) {
+    console.error('Error fetching todos:', error);
+    res.status(500).json({ error: 'Failed to fetch todos' });
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+app.get('/health', async (req, res) => {
+    return res.status(200).json({
+        "helath": "ok"
+    })
+})
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
 
 // Graceful shutdown
-process.on('SIGINT', async () => {
-  await pool.end();
-  process.exit(0);
+process.on('beforeExit', async () => {
+  await prisma.$disconnect();
 });
