@@ -52,6 +52,7 @@ jobs:
     build_and_publish:
         needs: test
         runs-on: ubuntu-latest
+        environment: VPS_DEVOPS_TODO
         steps:
           - name: Checkout code
             uses: actions/checkout@v2
@@ -61,7 +62,7 @@ jobs:
             with:
               registry: ghcr.io
               username: ${{ github.actor }}
-              password: ${{ secrets.TOKEN }}
+              password: ${{ secrets.TOKEN_GHCR }}
 
           - name: Build Docker image
             run: |
@@ -74,6 +75,7 @@ jobs:
     deploy:
         needs: build_and_publish
         runs-on: ubuntu-latest
+        environment: VPS_DEVOPS_TODO
 
         steps:
           - name: Deploy to Server
