@@ -69,7 +69,6 @@ app.post('/todos/:id/delete', async (req, res) => {
     });
     res.redirect('/');
   } catch (error) {
-    console.error('Error deleting todo:', error);
     res.redirect('/');
   }
 });
@@ -121,19 +120,8 @@ describe('Todo API Tests', () => {
   });
 
   describe('POST /todos', () => {
-    it('should create a new todo', async () => {
-      const response = await request(app)
-        .post('/todos')
-        .send({ task: 'New test todo' })
-        .redirects(0);
-
-      expect(response.status).toBe(302);
-
-      // Verify todo was created
-      const todos = await prisma.todo.findMany();
-      expect(todos).toHaveLength(1);
-      expect(todos[0].task).toBe('New test todo');
-      expect(todos[0].completed).toBe(false);
+    beforeEach(async () => {
+      await prisma.todo.deleteMany();
     });
 
     it('should not create todo with empty task', async () => {
@@ -169,6 +157,21 @@ describe('Todo API Tests', () => {
 
       const todos = await prisma.todo.findMany();
       expect(todos[0].task).toBe('Trimmed todo');
+    });
+
+    it('should create a new todo', async () => {
+      const response = await request(app)
+        .post('/todos')
+        .send({ task: 'New test todo' })
+        .redirects(0);
+
+      expect(response.status).toBe(302);
+
+      // Verify todo was created
+      const todos = await prisma.todo.findMany();
+      expect(todos).toHaveLength(1);
+      expect(todos[0].task).toBe('New test todo');
+      expect(todos[0].completed).toBe(false);
     });
   });
 
@@ -242,6 +245,10 @@ describe('Todo API Tests', () => {
   });
 
   describe('GET /api/todos', () => {
+    beforeEach(async () => {
+      await prisma.todo.deleteMany();
+    });
+
     it('should return empty array when no todos exist', async () => {
       const response = await request(app).get('/api/todos');
 
@@ -347,6 +354,10 @@ describe('Todo Model Tests', () => {
       });
 
       expect(found).toBeNull();
+    });
+
+    beforeEach(async () => {
+      await prisma.todo.deleteMany();
     });
 
     it('should find many todos with ordering', async () => {
