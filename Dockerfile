@@ -7,6 +7,7 @@ COPY server.js .
 COPY prisma ./prisma
 COPY public ./public
 COPY views ./views
+COPY run.sh .
 
 RUN npm install
 EXPOSE 3000
