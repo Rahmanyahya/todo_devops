@@ -1,12 +1,15 @@
-FROM  node:20-alpine
+FROM node:20-bullseye
 
 WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
 
 COPY . .
 
 RUN mv .env.example .env
-
-RUN npm install && chmod +x run.sh
+RUN npx prisma generate
+RUN chmod +x run.sh
 
 EXPOSE 3000
 
