@@ -2,12 +2,9 @@ FROM  node:20-alpine
 
 WORKDIR /app
 
-COPY package.json .
-COPY server.js .
-COPY prisma ./prisma
-COPY public ./public
-COPY views ./views
-COPY run.sh .
+COPY . .
+
+RUN mv .env.example .env
 
 RUN npm install && chmod +x run.sh
 
