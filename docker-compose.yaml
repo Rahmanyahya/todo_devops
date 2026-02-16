@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16
-    container_name: postgres-db
+    container_name: postgres-db-todo
     networks:
       - todo_network
     restart: unless-stopped
@@ -29,8 +29,6 @@ services:
     restart: unless-stopped
     networks:
       - todo_network
-    env_file:
-      - .env
     ports:
       - "127.0.0.1:${PORT}:${PORT}"
     healthcheck:

@@ -1,2 +1,4 @@
 Dockerfile
 docker-compose.yaml
+.env
+.github/workflows/ci.yml
