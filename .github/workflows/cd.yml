@@ -17,10 +17,18 @@ jobs:
         - name: Setup Postgres
           uses: Harmon758/postgresql-action@v1.0.0
           with:
-            postgresql version: '18'
+            postgresql version: '16'
             postgresql db: ${{ secrets.POSTGRES_DB }}
-            postgresql username: ${{ secrets.POSTGRES_USER }}
+            postgresql user: ${{ secrets.POSTGRES_USER }}
             postgresql password: ${{ secrets.POSTGRES_PASSWORD }}
+
+        - name: Wait for Postgres
+          run: |
+            until pg_isready -h localhost -p 5432; do
+              echo "Waiting for PostgreSQL to be ready..."
+              sleep 1
+            done
+            
         - name: Set up nodejs
           uses: actions/setup-node@v2
           with:
@@ -35,10 +43,9 @@ jobs:
           run: npx prisma migrate deploy
 
         - name: Run tests
-          uses: actions/github-script@v6
           env:
             DATABASE_URL: postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB }}
-            run: npm test
+          run: npm test
     
     build_and_publish:
         needs: test
