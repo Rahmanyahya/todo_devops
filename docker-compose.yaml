@@ -24,7 +24,7 @@ services:
       postgres:
         condition: service_healthy
         restart: true
-    build: ghcr.io/Rahmanyahya/todo_app:latest
+    build: ghcr.io/rahmanyahya/todo_app:latest
     container_name: todo_app
     restart: unless-stopped
     networks:
