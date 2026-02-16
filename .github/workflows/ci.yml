@@ -35,7 +35,7 @@ jobs:
             node-version: '20'
       
         - name: Install dependencies
-          run: npm install
+          run: npm ci
 
         - name: Run Migrations
           env:
@@ -47,9 +47,7 @@ jobs:
         - name: Run tests
           env:
             DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
-          run: |
-            node ./tests/setup.js
-            npm test:ci
+          run: npm test:ci
     
     build_and_publish:
         needs: test
