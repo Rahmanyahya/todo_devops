@@ -87,6 +87,7 @@ jobs:
               port: 22
               script: |
                 cd /home/${{ github.event.repository.name }}
+                git pull origin main
                 docker compose pull
                 docker compose up -d
 
