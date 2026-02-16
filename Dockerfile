@@ -9,7 +9,8 @@ COPY public ./public
 COPY views ./views
 COPY run.sh .
 
-RUN npm install
+RUN npm install && chmod +x run.sh
+
 EXPOSE 3000
 
-CMD ["run.sh"]
+CMD ["sh", "run.sh"]
