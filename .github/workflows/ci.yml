@@ -47,7 +47,7 @@ jobs:
         - name: Run tests
           env:
             DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
-          run: npm run test:ci
+          run: npm run test
     
     build_and_publish:
         needs: test
