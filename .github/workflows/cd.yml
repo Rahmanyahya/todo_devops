@@ -8,43 +8,43 @@ on:
 
 jobs:
     test:
-        runs-on: ubuntu-latest
+      runs-on: ubuntu-latest
+
+      services:
+        postgres:
+          image: postgres:16
+          env:
+            POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+            POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+            POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          ports:
+            - 5432:5432
+          options: >-
+            --health-cmd pg_isready 
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
         
-        steps:
+      steps:
         - name: Checkout code
           uses: actions/checkout@v2
 
-        - name: Setup Postgres
-          uses: Harmon758/postgresql-action@v1.0.0
-          with:
-            postgresql version: '16'
-            postgresql db: ${{ secrets.POSTGRES_DB }}
-            postgresql user: ${{ secrets.POSTGRES_USER }}
-            postgresql password: ${{ secrets.POSTGRES_PASSWORD }}
-
-        - name: Wait for Postgres
-          run: |
-            until pg_isready -h localhost -p 5432; do
-              echo "Waiting for PostgreSQL to be ready..."
-              sleep 1
-            done
-            
-        - name: Set up nodejs
+        - name: Set up node
           uses: actions/setup-node@v2
           with:
             node-version: '20'
-
+      
         - name: Install dependencies
           run: npm install
 
-        - name: Run migrations
+        - name: Run Migrations
           env:
-            DATABASE_URL: postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB }}
+            DATABASE_URL: postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB }}
           run: npx prisma migrate deploy
-
+        
         - name: Run tests
           env:
-            DATABASE_URL: postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB }}
+            DATABASE_URL: postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB }}
           run: npm test
     
     build_and_publish:
